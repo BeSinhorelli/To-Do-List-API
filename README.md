@@ -1,6 +1,6 @@
 # 📝 Gerenciador de Tarefas - To-Do-List-API
 
-Uma aplicação web completa para gerenciamento de tarefas, construída com Python Flask no backend e um frontend moderno com HTML, CSS e JavaScript. A aplicação utiliza MySQL para persistência de dados e oferece uma interface intuitiva e responsiva.
+Uma aplicação web completa para gerenciamento de tarefas, construída com Python no backend e um frontend moderno com HTML, CSS e JavaScript. A aplicação utiliza MySQL para persistência de dados e oferece uma interface intuitiva e responsiva.
 
 ## 🚀 Funcionalidades
 
@@ -29,9 +29,7 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
 
 ### Backend
 - **Python 3.8+**
-- **Flask 2.3.2** - Framework web
 - **MySQL Connector** - Driver para conexão com MySQL
-- **Flask-CORS** - Para permitir requisições cross-origin
 - **python-dotenv** - Gerenciamento de variáveis de ambiente
 
 ### Frontend
