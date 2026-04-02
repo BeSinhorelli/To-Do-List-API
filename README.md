@@ -1,4 +1,4 @@
-# 📝 Gerenciador de Tarefas - To-Do List App
+# 📝 Gerenciador de Tarefas - To-Do-List-API
 
 Uma aplicação web completa para gerenciamento de tarefas, construída com Python Flask no backend e um frontend moderno com HTML, CSS e JavaScript. A aplicação utiliza MySQL para persistência de dados e oferece uma interface intuitiva e responsiva.
 
