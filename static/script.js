@@ -14,6 +14,7 @@ const filterBtns = document.querySelectorAll('.filter-btn');
 document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
     setupEventListeners();
+    setupModalEvents();
 });
 
 function setupEventListeners() {
@@ -23,14 +24,44 @@ function setupEventListeners() {
     });
 }
 
+function setupModalEvents() {
+    const modal = document.getElementById('editModal');
+    const closeBtn = document.querySelector('.close');
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    const editForm = document.getElementById('editTaskForm');
+    
+    closeBtn.onclick = () => modal.style.display = 'none';
+    cancelBtn.onclick = () => modal.style.display = 'none';
+    
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    editForm.addEventListener('submit', handleUpdateTask);
+}
+
 async function loadTasks() {
     try {
         const response = await fetch(`${API_BASE_URL}/tasks`);
         tasks = await response.json();
         renderTasks();
+        updateStats();
     } catch (error) {
         console.error('Erro ao carregar tarefas:', error);
         showError('Erro ao carregar tarefas. Verifique sua conexão.');
+    }
+}
+
+async function updateStats() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/tasks/stats`);
+        const stats = await response.json();
+        // Você pode adicionar um elemento para mostrar as estatísticas se quiser
+        console.log('Estatísticas:', stats);
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
     }
 }
 
@@ -45,26 +76,20 @@ async function handleAddTask(e) {
         return;
     }
     
-    const newTask = {
-        title: title,
-        description: description
-    };
+    const newTask = { title, description };
     
     try {
         const response = await fetch(`${API_BASE_URL}/tasks`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newTask)
         });
         
         const task = await response.json();
-        tasks.push(task);
+        tasks.unshift(task);
         renderTasks();
         taskForm.reset();
-        
-        // Mostrar mensagem de sucesso
+        updateStats();
         showSuccess('Tarefa adicionada com sucesso!');
     } catch (error) {
         console.error('Erro ao adicionar tarefa:', error);
@@ -83,9 +108,15 @@ async function handleToggleTask(taskId) {
         if (index !== -1) {
             tasks[index] = updatedTask;
             renderTasks();
+            updateStats();
+            
+            const message = updatedTask.completed ? 
+                'Tarefa marcada como concluída! 🎉' : 
+                'Tarefa marcada como pendente!';
+            showSuccess(message);
         }
     } catch (error) {
-        console.error('Erro ao alternar status da tarefa:', error);
+        console.error('Erro ao alternar status:', error);
         showError('Erro ao atualizar tarefa.');
     }
 }
@@ -100,6 +131,7 @@ async function handleDeleteTask(taskId) {
         
         tasks = tasks.filter(t => t.id !== taskId);
         renderTasks();
+        updateStats();
         showSuccess('Tarefa excluída com sucesso!');
     } catch (error) {
         console.error('Erro ao excluir tarefa:', error);
@@ -107,10 +139,67 @@ async function handleDeleteTask(taskId) {
     }
 }
 
+async function openEditModal(taskId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
+        const task = await response.json();
+        
+        document.getElementById('editTaskId').value = task.id;
+        document.getElementById('editTaskTitle').value = task.title;
+        document.getElementById('editTaskDescription').value = task.description || '';
+        document.getElementById('editTaskCompleted').checked = task.completed;
+        
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Erro ao carregar tarefa:', error);
+        showError('Erro ao carregar dados da tarefa');
+    }
+}
+
+async function handleUpdateTask(e) {
+    e.preventDefault();
+    
+    const taskId = document.getElementById('editTaskId').value;
+    const title = document.getElementById('editTaskTitle').value.trim();
+    const description = document.getElementById('editTaskDescription').value.trim();
+    const completed = document.getElementById('editTaskCompleted').checked;
+    
+    if (!title) {
+        showError('O título é obrigatório');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, completed })
+        });
+        
+        if (!response.ok) throw new Error('Erro ao atualizar');
+        
+        const updatedTask = await response.json();
+        const index = tasks.findIndex(t => t.id === updatedTask.id);
+        if (index !== -1) {
+            tasks[index] = updatedTask;
+        }
+        
+        document.getElementById('editModal').style.display = 'none';
+        renderTasks();
+        updateStats();
+        showSuccess('Tarefa atualizada com sucesso!');
+        
+    } catch (error) {
+        console.error('Erro ao atualizar tarefa:', error);
+        showError('Erro ao atualizar tarefa.');
+    }
+}
+
 function handleFilterChange(filter) {
     currentFilter = filter;
     
-    // Atualizar classes dos botões
     filterBtns.forEach(btn => {
         if (btn.dataset.filter === filter) {
             btn.classList.add('active');
@@ -148,32 +237,30 @@ function renderTasks() {
     }
     
     tasksList.innerHTML = filteredTasks.map(task => `
-        <div class="task-card ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+        <div class="task-card ${task.completed ? 'completed' : ''}">
             <div class="task-header">
                 <div class="task-title">${escapeHtml(task.title)}</div>
                 <div class="task-actions">
-                    <button class="action-btn complete-btn" onclick="handleToggleTask(${task.id})">
+                    <button class="action-btn edit-btn" onclick="openEditModal(${task.id})" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn complete-btn" onclick="handleToggleTask(${task.id})" title="${task.completed ? 'Desmarcar' : 'Concluir'}">
                         <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
                     </button>
-                    <button class="action-btn delete-btn" onclick="handleDeleteTask(${task.id})">
+                    <button class="action-btn delete-btn" onclick="handleDeleteTask(${task.id})" title="Excluir">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
-            ${task.description ? `
-                <div class="task-description">
-                    ${escapeHtml(task.description)}
-                </div>
-            ` : ''}
+            ${task.description ? `<div class="task-description">${escapeHtml(task.description)}</div>` : ''}
             <div class="task-date">
-                <i class="far fa-calendar-alt"></i>
-                Criado em: ${formatDate(task.created_at)}
+                <i class="far fa-calendar-alt"></i> Criado: ${formatDate(task.created_at)}
+                ${task.updated_at !== task.created_at ? `<br><i class="fas fa-edit"></i> Editado: ${formatDate(task.updated_at)}` : ''}
             </div>
         </div>
     `).join('');
 }
 
-// Funções utilitárias
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -181,14 +268,19 @@ function escapeHtml(text) {
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    if (!dateString) return 'Data inválida';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch {
+        return dateString;
+    }
 }
 
 function showError(message) {
@@ -200,7 +292,6 @@ function showSuccess(message) {
 }
 
 function showNotification(message, type) {
-    // Criar elemento de notificação
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
@@ -208,52 +299,10 @@ function showNotification(message, type) {
         <span>${message}</span>
     `;
     
-    // Estilos da notificação
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        background: ${type === 'success' ? '#28a745' : '#dc3545'};
-        color: white;
-        border-radius: 8px;
-        z-index: 1000;
-        animation: slideInRight 0.3s ease-out;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    `;
-    
     document.body.appendChild(notification);
     
-    // Remover após 3 segundos
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
-
-// Adicionar animações ao CSS dinamicamente
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);

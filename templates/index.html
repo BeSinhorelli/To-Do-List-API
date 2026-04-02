@@ -39,8 +39,42 @@
                 <button class="filter-btn" data-filter="completed">Concluídas</button>
             </div>
             <div id="tasksList" class="tasks-list">
-                <!-- As tarefas serão carregadas aqui via JavaScript -->
+                <!-- Tarefas serão carregadas aqui -->
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Editar Tarefa</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId">
+                <div class="form-group">
+                    <label for="editTaskTitle">Título</label>
+                    <input type="text" id="editTaskTitle" placeholder="Digite o título da tarefa" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">Descrição</label>
+                    <textarea id="editTaskDescription" placeholder="Digite a descrição da tarefa" rows="3"></textarea>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="editTaskCompleted"> Marcar como concluída
+                    </label>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelEditBtn">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
