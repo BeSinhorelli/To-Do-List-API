@@ -11,7 +11,7 @@ Uma aplicação web completa para gerenciamento de tarefas, construída com Pyth
 - ✅ **Animações suaves** para melhor experiência do usuário
 - ✅ **Notificações em tempo real** para feedback de ações
 - ✅ **API RESTful** bem estruturada
-- ✅ **Persistência em MySQL** com pool de conexões
+- ✅ **Persistência em MySQL** 
 - ✅ **Logging** para facilitar debugging
 - ✅ **Endpoint de health check** para monitoramento
 - ✅ **Estatísticas** das tarefas
@@ -45,9 +45,5 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/todo-app.git
-cd todo-app
-
-```bash
-git clone https://github.com/seu-usuario/todo-app.git
+git clone https://github.com/BeSinhorelli/todo-app.git
 cd todo-app
