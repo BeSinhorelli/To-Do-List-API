@@ -60,6 +60,6 @@ Uma aplicação web full stack para gerenciamento de tarefas, desenvolvida com *
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/BeSinhorelli/To-Do-List.git
+git clone https://github.com/BeSinhorelli/To-Do-List-API.git
 cd To-Do-List
 pip install -r requirements.txt
